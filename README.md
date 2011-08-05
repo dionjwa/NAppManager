@@ -62,7 +62,7 @@ I'll assume you have an Ubuntu server that you can ssh into.  Probably the quick
 
 Import NAppManager **build.xml** into your own project ant build file, and import your own **build.properties** or equivalent.  Then call the ant task:
 
-	`ant uploadapp`
+`ant uploadapp`
 	
 And your app is rsync'ed, and registered with the NAppManager.  
 
