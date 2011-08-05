@@ -1,0 +1,28 @@
+#Haxe build file
+
+-D use_rtti_doc
+-D debug
+-D server
+
+-lib nodejs
+-lib hydrax
+-lib nodejs_externs
+
+-cp lib/bdog-core
+-cp lib/bdog-redis
+-cp lib/bdog-pstore
+-cp lib/hx.html5
+
+-cp src
+-cp etc
+
+-js build/appmanager.js
+
+-main Server
+
+-resource etc/nginx/nginx.conf.server.tmpl@nginx.conf.server.tmpl
+-resource etc/nginx/nginx.conf.server.location.tmpl@nginx.conf.server.location.tmpl
+-resource etc/nginx/init.d-ubuntu/nginx.tmpl@init.d-nginx.tmpl
+-resource etc/nginx/nginx.conf.tmpl@nginx.conf.tmpl
+-resource etc/upstart/app.conf.tmpl@app.conf.tmpl
+

@@ -1,0 +1,17 @@
+#build file
+
+-D use_rtti_doc
+-D debug
+-D no_alchemy
+
+-lib libdamago
+-cp src
+-cp etc
+
+# -resource config.properties@config.properties
+
+-neko build/Appclient.n
+
+-main haxe.remoting.appmanager.AppClient
+
+

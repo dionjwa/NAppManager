@@ -1,0 +1,18 @@
+server {
+	listen          ::port::;
+	server_name     ::subdomain::.::server:: ::domains::;
+	
+	location = /log.js {
+    	proxy_pass	http://127.0.0.1:::internalPort::;
+	}
+	
+	# serve static files
+	location ~* \.(jpg|jpeg|css|swf|svg|bmp|js|png|xml|ico)$ {
+	  root	::root::;
+	}
+	
+	# Pass api calls and dynamic pages to node
+	location = / {
+	  proxy_pass	http://127.0.0.1:::internalPort::;
+	}
+}

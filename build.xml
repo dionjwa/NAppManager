@@ -1,0 +1,119 @@
+<project name="appmanager" basedir="." default="syncserver">
+        <description>
+		Tasks for the appmanager. 
+	</description>
+        <dirname property="appmanager.basedir" file="${ant.file.appmanager}"/>
+        <property file="${basedir}/etc/build.properties"/>
+        <property name="build" location="${basedir}/build"/>
+        
+        <property name="subdomain" value="test"/>
+        <property name="port" value="80"/>
+        <property name="additional.domains" value=""/>
+        
+        
+        
+        <target name="init">
+                <mkdir dir="${build}"/>
+        </target>
+		
+        <target name="clean" description="Delete build dir">
+                <delete dir="${build}"/>
+        </target>
+		
+        <target name="appclient"  description="Build the appmanager client" depends="init">
+                <exec executable="${haxe}" dir="${appmanager.basedir}">
+                        <arg value="-resource"/>
+                        <arg value="${basedir}/etc/build.properties@config.properties"/>
+                        <arg value="${appmanager.basedir}/etc/buildclient.hxml"/>
+                </exec>
+        </target>
+        
+        <target name="uploadapp" description="Package and upload to the server" depends="appclient">
+                <echo message="Appclient ${server} ${subdomain} ${build} ${port} ${additional.domains}"/>
+                <exec executable="${neko}" >
+                                <arg value="${appmanager.basedir}/build/Appclient.n"/>
+                                <arg value="${server}"/>
+                                <arg value="${subdomain}"/>
+                                <arg value="${build}"/>
+                                <arg value="server.js"/>
+                                <arg value="${user}"/>
+                                <arg value="${pkey}"/>
+                                <arg value="${port}"/>
+                                <arg value="${additional.domains}"/>
+                </exec>
+        </target>
+        
+        <target name="buildappserver" description="Build the server locally (for testing)" depends="init,copyLocalLibraries">
+                <delete file="${build}/server.js"/>
+                <echo message="Building app server..."/>
+                <exec executable="haxe">
+                        <arg value="-resource"/>
+                        <arg value="etc/build.properties@config.properties"/>
+                        <arg value="${basedir}/etc/buildserver.hxml"/>
+                </exec>
+        </target>
+        
+        <target name="testapp" description="Upload the test app to the server">
+                <delete file="${build}/server.js"/>
+                <echo message="Building test app..."/>
+                <exec executable="haxe">
+                        <arg value="-main"/>
+                        <arg value="TestServer"/>
+                        <arg value="-js"/>
+                        <arg value="build/server.js"/>
+                        <arg value="-lib"/>
+                        <arg value="nodejs"/>
+                        <arg value="-lib"/>
+                        <arg value="hydrax"/>
+                        <arg value="-cp"/>
+                        <arg value="src"/>
+                </exec>
+                
+                <echo message="Uploading test app..."/>
+                <antcall target="uploadapp">
+                </antcall>
+        </target>
+        
+        <target name="syncserver"  description="Updates the server on the host machine" depends="buildappserver">
+                <echo message="python ${appmanager.basedir}/src/sync.py ${basedir}/etc/build.properties"/>
+                <exec executable="python" >
+                        <arg value="${appmanager.basedir}/src/sync.py"/>
+                        <arg value="${basedir}/etc/build.properties"/>
+                </exec>
+        </target>
+        
+        <target name="copyLocalLibraries"  description="Development only.  Copies local libraries" >
+                <mkdir dir="${basedir}/lib/bdog-core"/>
+                <copy todir="${basedir}/lib/bdog-core">
+                        <fileset dir="${basedir}/../../libdamago/lib/bdog-core">
+                                <exclude name="**/*.git"/>
+                                <exclude name="**/*.haxed"/>
+                        </fileset>
+                </copy>
+                
+                <mkdir dir="${basedir}/lib/bdog-redis"/>
+                <copy todir="${basedir}/lib/bdog-redis">
+                        <fileset dir="${basedir}/../../libdamago/lib/bdog-redis">
+                                <exclude name="**/*.git"/>
+                                <exclude name="**/*.haxed"/>
+                        </fileset>
+                </copy>
+                
+                <mkdir dir="${basedir}/lib/bdog-pstore"/>
+                <copy todir="${basedir}/lib/bdog-pstore">
+                        <fileset dir="${basedir}/../../libdamago/lib/bdog-pstore">
+                                <exclude name="**/*.git"/>
+                                <exclude name="**/*.haxed"/>
+                        </fileset>
+                </copy>
+                
+                <mkdir dir="${basedir}/lib/hx.html5"/>
+                <copy todir="${basedir}/lib/hx.html5">
+                        <fileset dir="${basedir}/../../libdamago/lib/hx.html5">
+                                <exclude name="**/*.git"/>
+                                <exclude name="**/*.haxed"/>
+                        </fileset>
+                </copy>
+                
+        </target>
+</project>

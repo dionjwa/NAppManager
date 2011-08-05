@@ -1,0 +1,6 @@
+location ~* /::subdomain::/\.(jpg|jpeg|css|swf|svg|bmp|png|js|xml)$ {
+	root	::root::;
+}
+location /::subdomain::/ {
+	proxy_pass	http://127.0.0.1:::internalPort::;
+}

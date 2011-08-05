@@ -1,0 +1,21 @@
+#!upstart
+description "appmanager controlled node.js server"
+author      "::author::"
+
+start on runlevel 2 
+# start on startup
+stop on runlevel [!2]
+
+pre-start script
+        sleep 6        #wait some time to make sure interfaces have IPs
+end script
+
+# Restart the process if it dies with a signal
+# or exit code not given by the 'normal exit' stanza.
+respawn
+
+chdir ::appdir::
+
+script
+	::script::
+end script

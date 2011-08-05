@@ -1,0 +1,39 @@
+
+#######################################################
+# Locations of local binaries
+haxe=/usr/bin/haxe
+node=/usr/local/bin/node
+neko=/usr/bin/neko
+
+############################
+#Connection properties
+
+user=dion
+
+#Actual Amazon instance
+server=transition9.com
+pkey=/Users/dion/.ec2/dionjwakey.pem
+ssh_port=22
+
+#Local testing server
+# ssh_port=22
+# server=transition9.local
+# pkey=/Users/dion/.ssh/id_rsa
+
+
+############################
+#You shouldn't modify these without good reason
+apps_dir=/home/www-data/apps
+redis_db_dir=/data/redis
+
+#Application versions. 
+redis_version=2.2.8
+nginx_version=1.0.4
+nodejs_version=0.4.8
+
+#This is the location on the remote server where this is rsync'd to
+appmanager_home=/opt/appmanager
+#Nginx will pass requests from apps.<your domain> to this internal port 
+appmanager_port_internal=1587
+
+
