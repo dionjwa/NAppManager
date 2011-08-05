@@ -15,7 +15,7 @@ NAppManager is an application deployment system for [Node.js][nodejs] based serv
 - A simple web interface is provided for shutting down, reverting, and deleting apps.
 - You can have a single server serving as many apps as you want, NAppManager makes sure only one version is running at once.
 
-It's only test with [Ubuntu Server running as Amazon EC2 instances][ubuntuamazon], but will likely run on any linux box.  It requires HaXe and Python to build and deploy the application manager, but the deployed server apps themselves only need to be Node.js scripts. 
+It's only tested with [Ubuntu Server running as Amazon EC2 instances][ubuntuamazon], but will likely run on any linux box with minor modifications.  It requires HaXe and Python to build and deploy the application manager, but the deployed server apps themselves only need to be Node.js scripts. 
 
 ### Please note:
 
@@ -25,7 +25,7 @@ NAppManager is in early alpha.  It's good enough to begin using, but there is cu
 
 ## Local machine
 
-You need the following on your local machine (pref some kind of \*nix):
+You need the following on your local machine:
 
 - [Haxe](http://haxe.org/download)
 - Hydrax via **haxelib**: `haxelib install hydrax`
@@ -40,25 +40,36 @@ I'll assume you have an Ubuntu server that you can ssh into.  Probably the quick
 - Download this repo to your local machine (not the server).  We'll call this folder the **NAppManager** folder.
 - Create a copy of **etc/build.properties.example** and rename to **etc/build.properties** in your local NAppManager folder.  Replace the values of these keys with the appropriate values to allow access to your server:
 
-	user=ubuntu
-	server=ec2-35-131-259-125.compute-1.amazonaws.com
-	pkey=/Users/<your login>/.ec2/<your ec2 key>.pem
+	`user=ubuntu`
+	
+	`server=ec2-35-131-259-125.compute-1.amazonaws.com`
+	
+	`pkey=/Users/<your login>/.ec2/<your ec2 key>.pem`
 
 - Go to the NAppManager folder in a terminal or dos promt, and run ant (the default task is to sync to the server):
 
-	ant
+	`ant`
 	
-- If everything worked, when you use a browser to go to your server address, you should see "Node.js AppManager".
+- Point your browser at your server (e.g. localhost if you have a virtual machine locally, or something like `ec2-35-131-259-125.compute-1.amazonaws.com` for an amazon instance.  If everything worked, you will see "Node.js AppManager".
 - Now launch a test app:
 	
-	ant testapp
+	`ant testapp`
 	
 - Refresh your browser pointing to your server, and you should see the app.
 - You can launch many test apps. 
 
-### More
+### Using it in an existing project
+
+Import NAppManager **build.xml** into your own project ant build file, and import your own **build.properties** or equivalent.  Then call the ant task:
+
+	`ant uploadapp`
+	
+And your app is rsync'ed, and registered with the NAppManager.  
+
+### Other notes
 
 Remember, you will only be able to ssh into the box through the port defined in **ssh_port** in `build.properties`.  Allowing you to define a non-standard ssh port is extra security precaution.
+
 
 
 
