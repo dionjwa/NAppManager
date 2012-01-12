@@ -79,7 +79,7 @@ class AppClient
 			trace('appserverURL=' + appserverURL);
 			var conn = HttpAsyncConnection.urlConnect(appserverURL);
 			conn.setErrorHandler( function(err) {trace(err);});
-			var appService = new AppAsyncProxy(conn);
+			var appService = haxe.remoting.Macros.buildAndInstantiateRemoteProxyClass("haxe.remoting.appmanager.AppManager", conn);
 			appService.deployAppFromLocalDir(serverAppFolder, appConfig, function (?_) :Void {
 				trace("done " + _);
 			});

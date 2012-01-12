@@ -1,7 +1,5 @@
 package haxe.remoting.appmanager;
 
-#if (nodejs && server)
-
 import js.node.redis.Redis;
 
 import org.transition9.async.AsyncLambda;
@@ -27,16 +25,9 @@ using org.transition9.util.StringUtil;
 using org.transition9.util.ObjectUtil;
 using org.transition9.ds.multimaps.MultiMapUtil;
 using js.node.redis.RedisObjectUtil;
-#end
 
 class AppManager
-	#if (nodejs && server)
-	implements AppService
-	#end
 {
-	public static inline var REMOTING_ID = "appmanager";
-	
-	#if (nodejs && server)
 	/** The file used as a marker to indicate the active (served) app for a given port/location */
 	static inline var ACTIVE_TOKEN = "ACTIVE";
 	static inline var APP_CONFIG_FILE = "app.config";
@@ -284,7 +275,8 @@ class AppManager
 		});
 	}
 	
-	public function deployApp (data :Bytes, conf :ClientAppConfig, cb :String->Void) :Void
+	@remote
+	public function deployApp (data :haxe.io.Bytes, conf :haxe.remoting.appmanager.ClientAppConfig, cb :String->Void) :Void
 	{
 		var self = this;
 		org.transition9.util.Assert.isNotNull(conf, "Bad: conf :ClientAppConfig is null");
@@ -349,7 +341,8 @@ class AppManager
 		});
 	}
 	
-	public function deployAppFromLocalDir (localDir :String, conf :ClientAppConfig, cb :String->Void) :Void
+	@remote
+	public function deployAppFromLocalDir (localDir :String, conf :haxe.remoting.appmanager.ClientAppConfig, cb :String->Void) :Void
 	{
 		var self = this;
 		org.transition9.util.Assert.isNotNull(conf, "Bad: conf :ClientAppConfig is null");
@@ -883,6 +876,4 @@ class AppManager
 			});
 		});
 	}
-	
-	#end
 }
