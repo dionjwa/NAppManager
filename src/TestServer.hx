@@ -18,7 +18,7 @@ class TestServer
 		Node.http.createServer(function (req :NodeHttpServerReq, res :NodeHttpServerResp) {
 			trace(req.url);
 			res.writeHead(200, {});
-			res.end("Hello, I'm the TestServer on port " + port + ", built on " + com.pblabs.util.PBMacros.getDate());
+			res.end("Hello, I'm the TestServer on port " + port + ", built on " + org.transition9.util.PBMacros.getDate());
 		}).listen(port, '127.0.0.1');
 	}
 }

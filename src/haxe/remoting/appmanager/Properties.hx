@@ -1,5 +1,5 @@
 package haxe.remoting.appmanager;
-@:build(com.pblabs.util.PBMacros.buildPropertiesClass("config.properties"))
+@:build(org.transition9.util.Macros.buildPropertiesClass(["etc/build.properties"]))
 class Properties
 {
 }

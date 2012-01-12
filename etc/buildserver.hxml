@@ -3,15 +3,16 @@
 -D use_rtti_doc
 -D debug
 -D server
+-D nodejs
+# -D disable_nginx
 
 -lib nodejs
--lib hydrax
+-lib transition9
 -lib nodejs_externs
-
--cp lib/bdog-core
--cp lib/bdog-redis
--cp lib/bdog-pstore
--cp lib/hx.html5
+-lib html5
+-lib nodejs-redis
+-lib remoting
+-lib nodejs-tools
 
 -cp src
 -cp etc

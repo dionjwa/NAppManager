@@ -105,7 +105,7 @@ then
 	cd /tmp
 	if [ ! -f "/tmp/node-v$nodejs_version.tar.gz" ];
 	then
-		wget --directory-prefix=/tmp "http://nodejs.org/dist/node-v$nodejs_version.tar.gz";
+		wget --directory-prefix=/tmp "http://nodejs.org/dist/v$nodejs_version/node-v$nodejs_version.tar.gz";
 	fi
 	tar xzvf node-v$nodejs_version.tar.gz
 	cd node-v$nodejs_version
@@ -118,10 +118,10 @@ then
 		echo "NODE_PATH=/usr/local/lib/node_modules" | sudo tee -a /etc/environment > /dev/null
 	fi
 	 
-	echo "This has to be done manually to install npm:"
-	echo "curl http://npmjs.org/install.sh >install.sh"
-	echo "sudo sh install.sh"
-	echo "sudo npm install redis connect everyauth -g"
+	# echo "This has to be done manually to install npm:"
+	# echo "curl http://npmjs.org/install.sh >install.sh"
+	# echo "sudo sh install.sh"
+	# echo "sudo npm install redis connect everyauth -g"
 else
 	echo "nodejs $nodejs_version up to date"
 fi

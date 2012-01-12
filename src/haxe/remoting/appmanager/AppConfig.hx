@@ -67,7 +67,7 @@ class AppConfig extends ClientAppConfig,
 	
 	public function toString () :String
 	{
-	    return com.pblabs.util.StringUtil.objectToString(this, [
+	    return org.transition9.util.StringUtil.objectToString(this, [
 			"appFolder",
 			"isActive",
 			"internalPort",

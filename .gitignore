@@ -2,3 +2,9 @@ build.properties
 *.pyc
 build
 .DS_Store
+*.svn
+*.hg
+*.png
+*.ico
+*.coffee
+*.npmignore

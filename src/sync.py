@@ -36,7 +36,7 @@ sshcommand('sudo mkdir -p ' + props['appmanager_home'])
 sshcommand('sudo chown  ' + props['user'] + ' ' +  props['appmanager_home'])
 
 
-command = 'rsync -e "ssh -p ' + props['ssh_port'] + publickey + '" -azv --delete --exclude="build/test*" --exclude="lib" --exclude="#*" --exclude="*.pyc" --exclude="*.git" --exclude=".svn" --exclude=".DS_Store" ' + projectDir + '/ ' + props['user'] + '@' + props['server'] + ':' + props['appmanager_home']
+command = 'rsync -e "ssh -p ' + props['ssh_port'] + publickey + '" -azv --delete --exclude="build/test*" --exclude="#*" --exclude="*.pyc" --exclude="*.git" --exclude=".svn" --exclude=".DS_Store" ' + projectDir + '/ ' + props['user'] + '@' + props['server'] + ':' + props['appmanager_home']
 print command
 os.system(command)
 
@@ -45,5 +45,7 @@ sshcommand('cd ' + props['appmanager_home'] + ' ; ./src/setup.sh')
 
 #Run the appmanager
 # sshcommand('sudo start appmanager')
+print "Start the appmanager on the server with:"
+print "  sudo start appmanager"
 
 

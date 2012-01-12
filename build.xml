@@ -83,7 +83,7 @@
         </target>
         
         <target name="copyLocalLibraries"  description="Development only.  Copies local libraries" >
-                <mkdir dir="${basedir}/lib/bdog-core"/>
+                <!--<mkdir dir="${basedir}/lib/bdog-core"/>
                 <copy todir="${basedir}/lib/bdog-core">
                         <fileset dir="${basedir}/../../libdamago/lib/bdog-core">
                                 <exclude name="**/*.git"/>
@@ -113,7 +113,7 @@
                                 <exclude name="**/*.git"/>
                                 <exclude name="**/*.haxed"/>
                         </fileset>
-                </copy>
+                </copy>-->
                 
         </target>
 </project>

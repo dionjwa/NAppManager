@@ -1,29 +1,31 @@
 package haxe.remoting.appmanager;
 
 #if (nodejs && server)
-import com.pblabs.util.AsyncLambda;
-import com.pblabs.util.Comparators;
-import com.pblabs.util.Predicates;
-import com.pblabs.util.Rand;
-import com.pblabs.util.StringUtil;
-import bdog.redis.Redis;
+
+import js.node.redis.Redis;
+
+import org.transition9.async.AsyncLambda;
+import org.transition9.util.Comparators;
+import org.transition9.util.Predicates;
+import org.transition9.util.Rand;
+import org.transition9.util.StringUtil;
 import haxe.io.Bytes;
 import haxe.Template;
 import haxe.Resource;
 import js.Node;
 import haxe.remoting.appmanager.AppService;
-import com.pblabs.util.ds.maps.MapBuilder;
-import com.pblabs.util.ds.Map;
-import com.pblabs.util.ds.MultiMap;
-import com.pblabs.util.ds.multimaps.ArrayMultiMap;
-import com.pblabs.util.ds.Sets;
-import com.pblabs.util.ds.Set;
+import org.transition9.ds.maps.MapBuilder;
+import org.transition9.ds.Map;
+import org.transition9.ds.MultiMap;
+import org.transition9.ds.multimaps.ArrayMultiMap;
+import org.transition9.ds.Sets;
+import org.transition9.ds.Set;
 import Type;
 using Lambda;
 using StringTools;
-using com.pblabs.util.StringUtil;
-using com.pblabs.util.ObjectUtil;
-using com.pblabs.util.ds.multimaps.MultiMapUtil;
+using org.transition9.util.StringUtil;
+using org.transition9.util.ObjectUtil;
+using org.transition9.ds.multimaps.MultiMapUtil;
 using js.node.redis.RedisObjectUtil;
 #end
 
@@ -82,7 +84,7 @@ class AppManager
 								var appId = Reflect.field(query, "appid");
 								loadConfig(redisKey(appId), function (config :AppConfig) :Void {
 									deleteApp(appId, function () :Void {
-										com.pblabs.util.Log.debug("finished deleting app");
+										org.transition9.util.Log.debug("finished deleting app");
 										showApps(req, res);
 									});
 								});
@@ -94,7 +96,7 @@ class AppManager
 											showApps(req, res);
 										});
 									} else {
-										com.pblabs.util.Log.error("no config on " + redisKey(appId)); 
+										org.transition9.util.Log.error("no config on " + redisKey(appId)); 
 										showApps(req, res);
 									}
 								});
@@ -167,18 +169,18 @@ class AppManager
 	
 	public function new () :Void
 	{
-		com.pblabs.util.Rand.getStream().setSeed(Std.int(Date.now().getTime() / 1000));
+		org.transition9.util.Rand.getStream().setSeed(Std.int(Date.now().getTime() / 1000));
 		_appDir = Properties.apps_dir;
-		com.pblabs.util.Log.debug('appsDir=' + _appDir);
+		org.transition9.util.Log.debug('appsDir=' + _appDir);
 		
 		#if debug
 		if (Node.path.existsSync(_appDir)) {
 			trace("App folders=\n    " + getAppFolders().join("\n    "));
 		} else {
-			com.pblabs.util.Log.error(_appDir + " doesn't exist.");
+			org.transition9.util.Log.error(_appDir + " doesn't exist.");
 		}
 		#end
-		com.pblabs.util.Log.debug("getAllConfigs");
+		org.transition9.util.Log.debug("getAllConfigs");
 		// deleteAll();
 		getAllConfigs(function (cfgs :Array<AppConfig>) :Void {
 			updateNginx(function (_) :Void {trace("Nginx updated");});
@@ -195,7 +197,7 @@ class AppManager
 		redis.del(CONFIG_LIST, function (e :Err, exists :Int) :Void {});
 		
 		getRunningApps(function (runningAppFolders :Array<String>) :Void {
-			com.pblabs.util.Log.debug("finished getRunningApps\n" + runningAppFolders.join("\n"));
+			org.transition9.util.Log.debug("finished getRunningApps\n" + runningAppFolders.join("\n"));
 			for (appFolder in runningAppFolders) {
 				stopUpstart(appFolder, function () :Void {trace("shutdown " + appFolder);});
 			}
@@ -207,8 +209,8 @@ class AppManager
 	
 	static function saveConfig (config :AppConfig, cb :String->Void) :Void
 	{
-		com.pblabs.util.Assert.isNotNull(config, " config is null");
-		com.pblabs.util.Assert.isNotNull(config.key, " config.key is null");
+		org.transition9.util.Assert.isNotNull(config, " config is null");
+		org.transition9.util.Assert.isNotNull(config.key, " config.key is null");
 		redis.saveObject(config, function () :Void {
 			redis.sadd(CONFIG_LIST, config.key, function (error :Err, done :Int) :Void {
 				if (error != null) {
@@ -241,16 +243,16 @@ class AppManager
 	static function getAllConfigs (cb :Array<AppConfig>->Void) :Void
 	{
 		redis.exists(CONFIG_LIST, function (e :Err, exists :Int) :Void {
-			com.pblabs.util.Assert.isNull(e, Std.string(e));
+			org.transition9.util.Assert.isNull(e, Std.string(e));
 			if (exists == 1) {
 				redis.smembers(CONFIG_LIST, function (e :Err, configsKeys :Array<Dynamic>) :Void {
-					com.pblabs.util.Assert.isNull(e, Std.string(e));
+					org.transition9.util.Assert.isNull(e, Std.string(e));
 					var configs = new Array<AppConfig>();
 					redis.scard(CONFIG_LIST, function (e :Err, size :Int) :Void {
-						com.pblabs.util.Assert.isNull(e, Std.string(e));
+						org.transition9.util.Assert.isNull(e, Std.string(e));
 						for (configKey in configsKeys) {
 							loadConfig(configKey, function (config :AppConfig) :Void {
-								com.pblabs.util.Log.debug("Loaded config " + config);
+								org.transition9.util.Log.debug("Loaded config " + config);
 								configs.push(config);
 								if (configs.length == size) {
 									cb(configs.filter(Predicates.notNull).array());
@@ -285,24 +287,24 @@ class AppManager
 	public function deployApp (data :Bytes, conf :ClientAppConfig, cb :String->Void) :Void
 	{
 		var self = this;
-		com.pblabs.util.Assert.isNotNull(conf, "Bad: conf :ClientAppConfig is null");
-		com.pblabs.util.Log.debug("deployApp " + StringUtil.stringify(conf));
+		org.transition9.util.Assert.isNotNull(conf, "Bad: conf :ClientAppConfig is null");
+		org.transition9.util.Log.debug("deployApp " + StringUtil.stringify(conf));
 		var config :AppConfig = cast conf;
-		com.pblabs.util.Log.debug('config=' + config);
+		org.transition9.util.Log.debug('config=' + config);
 		
 		config.subdomain = config.subdomain.trim();
 		config.subdomain = config.subdomain.startsWith("/") ? config.subdomain.substr(1) : config.subdomain;
 		
 		if (config.subdomain.isBlank()) {
 			var msg = "subDomain cannot be / or null or blank";
-			com.pblabs.util.Log.error(msg);
+			org.transition9.util.Log.error(msg);
 			cb(msg);
 			return;
 		}
 		
 		if (data == null || data.length == 0) {
 			var msg = "data null or 0 length";
-			com.pblabs.util.Log.error(msg);
+			org.transition9.util.Log.error(msg);
 			cb(msg);
 			return;
 		}
@@ -312,24 +314,24 @@ class AppManager
 		//Create the folder
 		Node.childProcess.exec("mkdir -p " + apppath, [], function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
 			
-			com.pblabs.util.Log.debug("  writing zip file=" + tempZipPath); 
-			Node.fs.writeFileSync(tempZipPath, data.getData(), 'binary');
+			org.transition9.util.Log.debug("  writing zip file=" + tempZipPath); 
+			Node.fs.writeFileSync(tempZipPath, data.getData(), NodeC.BINARY);
 			
 			Node.path.exists(tempZipPath, function (zipExists :Bool) :Void {
 				if (zipExists) {
-					com.pblabs.util.Log.debug("    exists " + tempZipPath);
+					org.transition9.util.Log.debug("    exists " + tempZipPath);
 					//Unzip
-					com.pblabs.util.Log.debug("    unzipping " + tempZipPath);
-					com.pblabs.util.Log.debug("    spawn: unzip -o " + " -d " + apppath + " " + tempZipPath);
+					org.transition9.util.Log.debug("    unzipping " + tempZipPath);
+					org.transition9.util.Log.debug("    spawn: unzip -o " + " -d " + apppath + " " + tempZipPath);
 					var command = "unzip " + tempZipPath + " -d " +  apppath;
 					Node.childProcess.exec(command, [], 
 					function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-						com.pblabs.util.Log.debug("        done unzipping ");
-						com.pblabs.util.Log.debug('               error=' + error);
-						com.pblabs.util.Log.debug(               'stdout=' + stdout);
-						com.pblabs.util.Log.debug('               stderr=' + stderr);
+						org.transition9.util.Log.debug("        done unzipping ");
+						org.transition9.util.Log.debug('               error=' + error);
+						org.transition9.util.Log.debug(               'stdout=' + stdout);
+						org.transition9.util.Log.debug('               stderr=' + stderr);
 						
-						com.pblabs.util.Log.debug(apppath + " contents:\n  " + Node.fs.readdirSync(apppath).join("\n  "));
+						org.transition9.util.Log.debug(apppath + " contents:\n  " + Node.fs.readdirSync(apppath).join("\n  "));
 						
 						if (error != null) {
 							cb(error);
@@ -340,7 +342,7 @@ class AppManager
 						
 					});
 				} else {
-					com.pblabs.util.Log.error("Missing zip file after writing");
+					org.transition9.util.Log.error("Missing zip file after writing");
 					cb("Missing zip file after writing");
 				}
 			});
@@ -350,26 +352,26 @@ class AppManager
 	public function deployAppFromLocalDir (localDir :String, conf :ClientAppConfig, cb :String->Void) :Void
 	{
 		var self = this;
-		com.pblabs.util.Assert.isNotNull(conf, "Bad: conf :ClientAppConfig is null");
-		com.pblabs.util.Log.info("deployAppFromLocalDir " + localDir );
+		org.transition9.util.Assert.isNotNull(conf, "Bad: conf :ClientAppConfig is null");
+		org.transition9.util.Log.info("deployAppFromLocalDir " + localDir );
 		var config :AppConfig = AppConfig.from(conf);
-		com.pblabs.util.Log.debug('config=' + config);
+		org.transition9.util.Log.debug('config=' + config);
 		
 		config.subdomain = config.subdomain.trim();
 		config.subdomain = config.subdomain.startsWith("/") ? config.subdomain.substr(1) : config.subdomain;
 		
 		if (config.subdomain.isBlank()) {
 			var msg = "subDomain cannot be / or null or blank";
-			com.pblabs.util.Log.error(msg);
+			org.transition9.util.Log.error(msg);
 			cb(msg);
 			return;
 		}
 		
-		com.pblabs.util.Assert.isTrue(config.port >= 80, "port must be >= 80");
+		org.transition9.util.Assert.isTrue(config.port >= 80, "port must be >= 80");
 		
 		getNextFreePort(function (port :Int) :Void {
 			config.internalPort = port;
-			com.pblabs.util.Log.info("Next free port=" + port);
+			org.transition9.util.Log.info("Next free port=" + port);
 			var md5 = "";
 			var date = Date.now();
 			
@@ -382,48 +384,48 @@ class AppManager
 			
 			var apppath = Node.path.join(_appDir, config.appFolder);
 			
-			com.pblabs.util.Log.debug('config=' + config);
+			org.transition9.util.Log.debug('config=' + config);
 				
-			// com.pblabs.util.Log.info("exists? " + apppath);
+			// org.transition9.util.Log.info("exists? " + apppath);
 			Node.path.exists(apppath, function (exists :Bool) :Void {
-				com.pblabs.util.Log.debug('  exists=' + exists);
+				org.transition9.util.Log.debug('  exists=' + exists);
 				if (exists) {
-					com.pblabs.util.Log.info("  removing " + apppath);
+					org.transition9.util.Log.info("  removing " + apppath);
 					Node.fs.rmdirSync(apppath);
 				}
-				com.pblabs.util.Log.info("  creating " + apppath + "...");
+				org.transition9.util.Log.info("  creating " + apppath + "...");
 				Node.fs.mkdirSync(apppath, 33261);//755
 				
-				com.pblabs.util.Log.debug(' deploying ' + JSON.stringify(config));
+				org.transition9.util.Log.debug(' deploying ' + JSON.stringify(config));
 				
 				Node.path.exists(localDir, function (exists :Bool) :Void {
 					if (exists) {
-						com.pblabs.util.Log.debug("    exists " + localDir);
+						org.transition9.util.Log.debug("    exists " + localDir);
 						
 						localDir = localDir.trim();
 						if (localDir.charAt(localDir.length - 1) == "/") {
 							localDir = localDir.substr(0, localDir.length - 1);
 						}
-						com.pblabs.util.Log.debug(localDir + " contents:\n  " + Node.fs.readdirSync(localDir).join("\n  "));
-						com.pblabs.util.Log.debug("     cp -r " + localDir + "/* " + apppath + "/");
+						org.transition9.util.Log.debug(localDir + " contents:\n  " + Node.fs.readdirSync(localDir).join("\n  "));
+						org.transition9.util.Log.debug("     cp -r " + localDir + "/* " + apppath + "/");
 						
 						var command = "cp -r " + localDir + "/* " + apppath + "/";
-						com.pblabs.util.Log.info(command);
+						org.transition9.util.Log.info(command);
 						Node.childProcess.exec(command, [], 
 							function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-								com.pblabs.util.Log.info("        done " + command);
-								com.pblabs.util.Log.debug('               error=' + error);
-								com.pblabs.util.Log.debug(               'stdout=' + stdout);
-								com.pblabs.util.Log.debug('               stderr=' + stderr);
+								org.transition9.util.Log.info("        done " + command);
+								org.transition9.util.Log.debug('               error=' + error);
+								org.transition9.util.Log.debug(               'stdout=' + stdout);
+								org.transition9.util.Log.debug('               stderr=' + stderr);
 								
 								if (error != null) {
 									cb(error);
 									return;
 								}
 								
-								com.pblabs.util.Log.debug(apppath + " contents:\n  " + Node.fs.readdirSync(apppath).join("\n  "));
+								org.transition9.util.Log.debug(apppath + " contents:\n  " + Node.fs.readdirSync(apppath).join("\n  "));
 								
-								com.pblabs.util.Log.debug("                    setActiveApp, passing own callback");
+								org.transition9.util.Log.debug("                    setActiveApp, passing own callback");
 								
 								config.isActive = false;
 								saveConfig(config, function (err :String) :Void {
@@ -442,13 +444,13 @@ class AppManager
 											return;
 										}
 										
-										com.pblabs.util.Log.debug("!!!!!!calling original callback");
+										org.transition9.util.Log.debug("!!!!!!calling original callback");
 										cb("Success!!!!");
 									});
 								});
 							});
 					} else {
-						com.pblabs.util.Log.error("Missing folder=" + localDir);
+						org.transition9.util.Log.error("Missing folder=" + localDir);
 						cb("\nMissing folder=" + localDir);
 					}
 				});
@@ -458,7 +460,7 @@ class AppManager
 	
 	static function setActiveApp (config :AppConfig, cb :String->Void) :Void
 	{
-		com.pblabs.util.Log.info("setActiveApp");
+		org.transition9.util.Log.info("setActiveApp");
 		//Stop current app at same domain/port, if running
 		shutdownMaskingApp(config, function (e :Dynamic) :Void {
 			trace("    finished shutdownMaskingApp");
@@ -468,16 +470,16 @@ class AppManager
 			}
 			
 			startAppUpstart(config, function (error :Dynamic) :Void {
-				com.pblabs.util.Log.info("    finished startAppUpstart");
+				org.transition9.util.Log.info("    finished startAppUpstart");
 				if (error != null) {
 					cb("\nstartAppUpstart failed: \n" + error);
 					return;
 				}
-				com.pblabs.util.Log.debug("                            startApp");
-				com.pblabs.util.Log.debug("                            calling updateNginx from setActiveApp");
+				org.transition9.util.Log.debug("                            startApp");
+				org.transition9.util.Log.debug("                            calling updateNginx from setActiveApp");
 				config.isActive = true;
 				saveConfig(config, function (error :Dynamic) :Void {
-					com.pblabs.util.Log.info("   finished saveConfig (active app config)");
+					org.transition9.util.Log.info("   finished saveConfig (active app config)");
 					if (error != null) {
 						cb("\nsaveConfig failed: \n" + error);
 						return;
@@ -491,7 +493,7 @@ class AppManager
 	/** Returns if app found and when shutdown, false if not found, or error */
 	static function shutdownMaskingApp (config :AppConfig, cb :Dynamic->Void) :Void
 	{
-		com.pblabs.util.Log.info("shutdownMaskingApp ");
+		org.transition9.util.Log.info("shutdownMaskingApp ");
 		getAllConfigs(function (configs :Array<AppConfig>) :Void {
 			if (configs.length == 0) {
 				trace("    !!!!! configs.length == 0, cb");
@@ -509,8 +511,8 @@ class AppManager
 					}
 				}
 				
-				var finished = function () :Void {
-					cb(null);
+				var finished = function (err) :Void {
+					cb(err);
 				}
 				
 				AsyncLambda.iter(configs, check, finished);
@@ -527,16 +529,16 @@ class AppManager
 	
 	static function deleteApp (appFolder :String, cb :Void->Void) :Void
 	{
-		com.pblabs.util.Log.warn("deleteApp " + appFolder);
+		org.transition9.util.Log.warn("deleteApp " + appFolder);
 		stopUpstart(appFolder, function () :Void {
-			com.pblabs.util.Log.info("rm -rf  " + Node.path.join(_appDir, appFolder));
+			org.transition9.util.Log.info("rm -rf  " + Node.path.join(_appDir, appFolder));
 			Node.childProcess.exec("rm -rf  " + Node.path.join(_appDir, appFolder), [], 
 				function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-					com.pblabs.util.Log.debug("   error=" + error);
-					com.pblabs.util.Log.debug("   stdout=" + stdout);
-					com.pblabs.util.Log.debug("   stderr=" + stderr);
+					org.transition9.util.Log.debug("   error=" + error);
+					org.transition9.util.Log.debug("   stdout=" + stdout);
+					org.transition9.util.Log.debug("   stderr=" + stderr);
 					if (error != null) {
-						com.pblabs.util.Log.error("Error on deleting  down app " + appFolder + "\n" + error);
+						org.transition9.util.Log.error("Error on deleting  down app " + appFolder + "\n" + error);
 					}
 					loadConfig(redisKey(appFolder), function (config :AppConfig) :Void {
 						if (config != null) {
@@ -554,7 +556,7 @@ class AppManager
 	  */
 	static function shutdownApp (config :AppConfig, cb :Bool->Void) :Void
 	{
-		com.pblabs.util.Log.info("shutdownApp");
+		org.transition9.util.Log.info("shutdownApp");
 		stopUpstart(config.appFolder, function () :Void {
 			trace("    finished stopUpstart");
 			config.isActive = false;
@@ -567,28 +569,28 @@ class AppManager
 	
 	static function stopUpstart (appFolder :String, cb :Void->Void) :Void
 	{
-		com.pblabs.util.Log.info("stopUpstart");
+		org.transition9.util.Log.info("stopUpstart");
 		var upstartAppId = UPSTART_APP_PREFIX + appFolder;
 		var upstartPath = "/etc/init/" + upstartAppId + ".conf";
 		var command = "/sbin/initctl stop " + upstartAppId;
-		com.pblabs.util.Log.info(command);
+		org.transition9.util.Log.info(command);
 		Node.childProcess.exec(command, [], 
 			function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-				com.pblabs.util.Log.info("    finished command");
-				com.pblabs.util.Log.debug('               error=' + error);
-				com.pblabs.util.Log.debug(               'stdout=' + stdout);
-				com.pblabs.util.Log.debug('               stderr=' + stderr);
+				org.transition9.util.Log.info("    finished command");
+				org.transition9.util.Log.debug('               error=' + error);
+				org.transition9.util.Log.debug(               'stdout=' + stdout);
+				org.transition9.util.Log.debug('               stderr=' + stderr);
 				
 				if (error != null) {
-					com.pblabs.util.Log.error("Error on shutting down app " + error);
+					org.transition9.util.Log.error("Error on shutting down app " + error);
 				} 
-				com.pblabs.util.Log.debug("stdout=" + stdout);
-				com.pblabs.util.Log.debug("stderr=" + stderr);
+				org.transition9.util.Log.debug("stdout=" + stdout);
+				org.transition9.util.Log.debug("stderr=" + stderr);
 				
 				//Now remove the script
 				Node.path.exists(upstartPath, function (exists :Bool) :Void {
 					if (exists) {
-						com.pblabs.util.Log.debug("deleting " + upstartPath);
+						org.transition9.util.Log.debug("deleting " + upstartPath);
 						Node.fs.unlinkSync(upstartPath);
 					}
 					cb();
@@ -598,13 +600,13 @@ class AppManager
 	
 	static function startAppUpstart (config :AppConfig, cb :Dynamic->Void) :Void
 	{
-		com.pblabs.util.Log.debug("startAppUpstart " + config);
+		org.transition9.util.Log.debug("startAppUpstart " + config);
 		var sourceDir = config.root;
 		var scriptPath = Node.path.join(config.root, config.scriptName);
 		Node.path.exists(scriptPath, function (exists :Bool) :Void {
 			if (exists) {
 				var upstartPath = "/etc/init/" + UPSTART_APP_PREFIX + config.appFolder + ".conf";
-				com.pblabs.util.Log.debug("writing to " + upstartPath);
+				org.transition9.util.Log.debug("writing to " + upstartPath);
 				if (config.internalPort == null || config.internalPort < START_PORT) {
 					cb("\nstartAppUpstart failed, config.internalPort=" + config.internalPort + "\n config=" +config);
 					return;
@@ -617,13 +619,13 @@ class AppManager
 					}));
 					
 				var command = "/sbin/initctl start " + UPSTART_APP_PREFIX + config.appFolder;
-				com.pblabs.util.Log.info(command);
+				org.transition9.util.Log.info(command);
 				Node.childProcess.exec(command, [], 
 					function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-						com.pblabs.util.Log.info("   finished " + command);
-						com.pblabs.util.Log.debug('               error=' + error);
-						com.pblabs.util.Log.debug(               'stdout=' + stdout);
-						com.pblabs.util.Log.debug('               stderr=' + stderr);
+						org.transition9.util.Log.info("   finished " + command);
+						org.transition9.util.Log.debug('               error=' + error);
+						org.transition9.util.Log.debug(               'stdout=' + stdout);
+						org.transition9.util.Log.debug('               stderr=' + stderr);
 						
 						if (error != null) {
 							cb("\n" + command + " failed: \n" + error);
@@ -632,7 +634,7 @@ class AppManager
 						cb(null);
 				});
 			} else {
-				com.pblabs.util.Log.error("Script for node doesn't exist=" + scriptPath);
+				org.transition9.util.Log.error("Script for node doesn't exist=" + scriptPath);
 				cb("\nScript for node doesn't exist=" + scriptPath);
 			}
 		});
@@ -641,24 +643,29 @@ class AppManager
 	/**
 	  * Get active apps, and rewrite the nginx.conf file, finally calling nginx reload or start.
 	  */
-	static function updateNginx (cb :Dynamic->Void) :Void
+	public static function updateNginx (cb :Dynamic->Void) :Void
 	{
-		com.pblabs.util.Log.info("updateNginx");
+		#if disable_nginx
+		cb(null);
+		return;
+		#end
+		
+		org.transition9.util.Log.info("updateNginx");
 		createNginxConfFromActiveApps(function (nginxConf :String) :Void {
-			com.pblabs.util.Log.debug("writing " + Node.path.join(Properties.appmanager_home, "etc/nginx/nginx.conf"));
+			org.transition9.util.Log.debug("writing " + Node.path.join(Properties.appmanager_home, "etc/nginx/nginx.conf"));
 			Node.fs.writeFileSync(Node.path.join(Properties.appmanager_home, "etc/nginx/nginx.conf"), nginxConf);
 			//Write the init.d script
 			var subs = Properties.toDynamicObject();
 			Node.fs.writeFileSync("/etc/init.d/nginx", new Template(Resource.getString("init.d-nginx.tmpl")).execute(subs));
 			Node.fs.chmodSync("/etc/init.d/nginx", 484);//Octal: 744
 				var command = "/etc/init.d/nginx status";
-				com.pblabs.util.Log.info(command);
+				org.transition9.util.Log.info(command);
 				Node.childProcess.exec(command, [],  
 					function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-						com.pblabs.util.Log.info("    finished "+ command);
-						com.pblabs.util.Log.debug('               error=' + error);
-						com.pblabs.util.Log.debug(               'stdout=' + stdout);
-						com.pblabs.util.Log.debug('               stderr=' + stderr);
+						org.transition9.util.Log.info("    finished "+ command);
+						org.transition9.util.Log.debug('               error=' + error);
+						org.transition9.util.Log.debug(               'stdout=' + stdout);
+						org.transition9.util.Log.debug('               stderr=' + stderr);
 						
 						if (error != null) {
 							cb("\n/etc/init.d/nginx status failed: \n" + error);
@@ -670,13 +677,13 @@ class AppManager
 							initdCommand = "start";
 						}
 						var command = "/etc/init.d/nginx " + initdCommand; 
-						com.pblabs.util.Log.info(command);
+						org.transition9.util.Log.info(command);
 						Node.childProcess.exec(command, [], 
 							function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-								com.pblabs.util.Log.info("    finished " + command);
-								com.pblabs.util.Log.debug('               error=' + error);
-								com.pblabs.util.Log.debug(               'stdout=' + stdout);
-								com.pblabs.util.Log.debug('               stderr=' + stderr);
+								org.transition9.util.Log.info("    finished " + command);
+								org.transition9.util.Log.debug('               error=' + error);
+								org.transition9.util.Log.debug(               'stdout=' + stdout);
+								org.transition9.util.Log.debug('               stderr=' + stderr);
 								cb(null);
 							});
 					});
@@ -686,8 +693,8 @@ class AppManager
 	static function createNginxConfFromActiveApps (cb :String->Void) :Void
 	{
 		var sb = new StringBuf();
-		com.pblabs.util.Assert.isNotNull(haxe.Resource.getString("nginx.conf.server.tmpl"), "Missing resource nginx.conf.server.tmpl");
-		com.pblabs.util.Assert.isNotNull(haxe.Resource.getString("nginx.conf.server.location.tmpl"), "Missing resource nginx.conf.server.location.tmpl");
+		org.transition9.util.Assert.isNotNull(haxe.Resource.getString("nginx.conf.server.tmpl"), "Missing resource nginx.conf.server.tmpl");
+		org.transition9.util.Assert.isNotNull(haxe.Resource.getString("nginx.conf.server.location.tmpl"), "Missing resource nginx.conf.server.location.tmpl");
 		var appTemplate = new haxe.Template(haxe.Resource.getString("nginx.conf.server.tmpl"));
 		var locationTemplate = new haxe.Template(haxe.Resource.getString("nginx.conf.server.location.tmpl"));
 		var subs = Properties.toDynamicObject();
@@ -698,7 +705,7 @@ class AppManager
 			if (configs != null) {
 				for (config in configs) {
 					if (config == null) {
-						com.pblabs.util.Log.debug("WTF, config null");  
+						org.transition9.util.Log.debug("WTF, config null");  
 						continue;
 					}
 					for (field in Reflect.fields(subs)) {
@@ -725,32 +732,32 @@ class AppManager
 	/** Make sure folders marked with an ACTIVE token are actually running */
 	static function checkActiveApps (finished :Void->Void, ?forceNginxUpdate :Bool = false) :Void
 	{
-		com.pblabs.util.Log.info("checkActiveApps");
+		org.transition9.util.Log.info("checkActiveApps");
 		var isNginxRestartRequired = forceNginxUpdate;
 		
 		//This is called when the async loop is finished
-		var finishedCheckingActiveApps = function () :Void {
+		var finishedCheckingActiveApps = function (err) :Void {
 			if (isNginxRestartRequired) {
-				com.pblabs.util.Log.info("At least one app triggered nginx restart");
+				org.transition9.util.Log.info("At least one app triggered nginx restart");
 				updateNginx(function (done :Bool) :Void {
-					com.pblabs.util.Log.info("   finished updateNginx success=" + done);
+					org.transition9.util.Log.info("   finished updateNginx success=" + done);
 					finished();
 				});
 			} else {
-				com.pblabs.util.Log.debug("Finished checking apps, no nginx restart required");
+				org.transition9.util.Log.debug("Finished checking apps, no nginx restart required");
 				finished();
 			}
 		}
 		
 		getRunningApps(function (runningAppFolders :Array<String>) :Void {
-			com.pblabs.util.Log.info("    finished getRunningApps\n" + runningAppFolders.join("\n"));
+			org.transition9.util.Log.info("    finished getRunningApps\n" + runningAppFolders.join("\n"));
 			getActiveAppsFromDB(function (configs :Array<AppConfig>) :Void {
-				com.pblabs.util.Log.info("    finished getActiveAppsFromDB\n" + configs.join("\n"));
+				org.transition9.util.Log.info("    finished getActiveAppsFromDB\n" + configs.join("\n"));
 				var checkConfig = function (config :AppConfig, onFinished :Void->Void) :Void {
 					var isRunning = runningAppFolders.has(config.appFolder);
 					if (!isRunning) {
 						isNginxRestartRequired = true;
-						com.pblabs.util.Log.error(config.appFolder + " is marked as ACTIVE, but is not running, restarting...");
+						org.transition9.util.Log.error(config.appFolder + " is marked as ACTIVE, but is not running, restarting...");
 						getNextFreePort(function (port :Int) :Void {
 							//Write config file
 							config.url = Properties.server + ":" + config.port + "/" + config.subdomain;
@@ -758,9 +765,9 @@ class AppManager
 							saveConfig(config, function (error :Dynamic) :Void {
 								startAppUpstart(config, function (error :Dynamic) :Void {
 									if (error != null) {
-										com.pblabs.util.Log.error(error);
+										org.transition9.util.Log.error(error);
 									}
-									com.pblabs.util.Log.debug(config.appFolder + " started");
+									org.transition9.util.Log.debug(config.appFolder + " started");
 									onFinished();
 								});
 							});
@@ -779,20 +786,20 @@ class AppManager
 	{
 		var out :String = "";
 		var command = "/sbin/initctl list";
-		com.pblabs.util.Log.info(command);
+		org.transition9.util.Log.info(command);
 		Node.childProcess.exec(command, [],
 			function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-				com.pblabs.util.Log.info("    finished " + command);
-				com.pblabs.util.Log.debug('               error=' + error);
-				com.pblabs.util.Log.debug(               'stdout=' + stdout);
-				com.pblabs.util.Log.debug('               stderr=' + stderr);
+				org.transition9.util.Log.info("    finished " + command);
+				org.transition9.util.Log.debug('               error=' + error);
+				org.transition9.util.Log.debug(               'stdout=' + stdout);
+				org.transition9.util.Log.debug('               stderr=' + stderr);
 				
 				for (appstatus in Std.string(stdout).split("\n")) {
 					var app = appstatus.split(" ")[0];
 					var status = appstatus.split(" ")[1];
 					
 					if (app.startsWith(UPSTART_APP_PREFIX)) {
-						com.pblabs.util.Log.debug('appstatus=' + appstatus);
+						org.transition9.util.Log.debug('appstatus=' + appstatus);
 						if (app.indexOf(config.appFolder) > -1) {
 							if (status.indexOf("running") > -1) {
 								cb(true);
@@ -814,7 +821,7 @@ class AppManager
 	
 	static function getRunningApps (cb :Array<String>->Void) :Void
 	{
-		com.pblabs.util.Log.debug("getRunningApps");
+		org.transition9.util.Log.debug("getRunningApps");
 		var running = [];
 		
 		Node.childProcess.exec("/sbin/initctl reload-configuration", [], function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
@@ -826,7 +833,7 @@ class AppManager
 						running.push(app.replace(UPSTART_APP_PREFIX, "").replace(".conf", ""));
 					}
 				}
-				com.pblabs.util.Log.debug("found running apps=" + running);
+				org.transition9.util.Log.debug("found running apps=" + running);
 				cb(running);
 			});
 		});

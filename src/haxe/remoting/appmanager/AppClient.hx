@@ -95,7 +95,7 @@ class AppClient
 		// request.end();
 		// request.on('response', function (response) {
 		//   trace('STATUS: ' + response.statusCode);
-		//   trace('HEADERS: ' + com.pblabs.util.StringUtil.stringify(response.headers));
+		//   trace('HEADERS: ' + org.transition9.util.StringUtil.stringify(response.headers));
 		//   response.setEncoding('utf8');
 		//   response.on('data', function (chunk) {
 		// 	trace('BODY: ' + chunk);
@@ -107,10 +107,10 @@ class AppClient
 		#if nodejs
 			Node.exec("rsync -av -e 'ssh -l " + user + " -i " + pkey + "' --delete --exclude=.git --exclude=.svn --exclude=.hg --exclude=.DS_Store " + localBuildFolder + "/ " + buildServer + ":" + serverAppFolder, 
 				function (error :Dynamic, stdout:Dynamic, stderr:Dynamic) :Void {
-					com.pblabs.util.Log.debug("        done copying ");
-					com.pblabs.util.Log.debug('               error=' + error);
-					com.pblabs.util.Log.debug(               'stdout=' + stdout);
-					com.pblabs.util.Log.debug('               stderr=' + stderr);
+					org.transition9.util.Log.debug("        done copying ");
+					org.transition9.util.Log.debug('               error=' + error);
+					org.transition9.util.Log.debug(               'stdout=' + stdout);
+					org.transition9.util.Log.debug('               stderr=' + stderr);
 					send();
 				});
 								
