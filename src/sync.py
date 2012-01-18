@@ -44,6 +44,7 @@ os.system(command)
 sshcommand('cd ' + props['appmanager_home'] + ' ; ./src/setup.sh')
 
 #Run the appmanager
+# # sshcommand('sudo stop appmanager')
 # sshcommand('sudo start appmanager')
 print "Start the appmanager on the server with:"
 print "  sudo start appmanager"

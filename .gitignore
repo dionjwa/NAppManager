@@ -1,4 +1,4 @@
-build.properties
+etc/build.properties
 *.pyc
 build
 .DS_Store
