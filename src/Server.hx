@@ -19,7 +19,7 @@ class Server
 		//The context holds all the different api/services.
 		var context = new Context();
 		var appService = new AppManager();
-		context.addObject(AppManager.REMOTING_ID, appService);
+		context.addObject(haxe.remoting.Macros.getRemotingId(AppManager), appService);
 		//Add the context to the html connection handler
 		var serviceHandler = new NodeJsHtmlConnection(context);
 		
